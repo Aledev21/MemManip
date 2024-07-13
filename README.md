@@ -6,7 +6,7 @@ MemManip é um projeto pessoal desenvolvido em C++ com GTK, focado na exploraç�
 
 - **Visualização de Memória em Tempo Real:** Explore e visualize áreas específicas de memória de processos ativos.
 - **Modificação de Dados:** Edite e altere valores diretamente na memória de outros programas.
-- **Interface Gráfica com GTK:**
+- **Interface Gráfica com GTK.**
 - **Suporte Multiplataforma:** Funciona em sistemas operacionais Windows e Linux.
 
 ## Motivação
