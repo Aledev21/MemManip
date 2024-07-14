@@ -21,7 +21,7 @@ void MemoryManager_delete(MemoryManager* mm)
     free(mm)
 }
 
-int MemoryManager-openProcess(MemoryManager* mm)
+int MemoryManager_openProcess(MemoryManager* mm)
 {
     mm ->hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, mm ->pid);
 
@@ -32,3 +32,4 @@ int MemoryManager-openProcess(MemoryManager* mm)
     }
     return (1);
 }
+
