@@ -33,3 +33,15 @@ int MemoryManager_openProcess(MemoryManager* mm)
     return (1);
 }
 
+int MemoryManager_writeInt(memoryManager* mm, LPVOID address, int value {})
+{
+    if (!WriteProcessMemory(mm->hProcess, address, &value, sizeof(value),NULL))
+    {
+        fprintf(stderr, "Error to write in memory. Code error: %lu\n", GetLastError());
+        
+        Closehandle(mm->hProcess);
+
+        return (0);
+    }
+    return (1);
+}
