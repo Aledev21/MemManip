@@ -11,3 +11,12 @@ MemoryManager* MemoryManager_new(DWORD pid)
     }
     return mm;
 }
+
+void MemoryManager_delete(MemoryManager* mm)
+{
+    if (mm != NULL && mm -> hProcess != NULL)
+    {
+        CloseHandle(mm->hProcess);
+    }
+    free(mm)
+}
