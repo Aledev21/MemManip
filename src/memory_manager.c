@@ -5,7 +5,6 @@
 #ifdef _WIN32
 #include <Windows.h>
 #else
-// Inclua as bibliotecas necessárias para sistemas não-Windows, se necessário
 #endif
 
 MemoryManager* MemoryManager_new(DWORD pid)
