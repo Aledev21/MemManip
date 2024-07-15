@@ -1,67 +1,51 @@
 #include "memory_manager.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ptrace.h>
+#include <errno.h>
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#endif
 
-MemoryManager* MemoryManager_new(DWORD pid)
+
+MemoryManager* MemoryManager_new(pid_t pid)
 {
     MemoryManager* mm = (MemoryManager*)malloc(sizeof(MemoryManager));
     if (mm != NULL)
     {
         mm->pid = pid;
-        mm->hProcess = NULL;
     }
     return mm;
 }
 
 void MemoryManager_delete(MemoryManager* mm)
 {
-    if (mm != NULL && mm->hProcess != NULL)
-    {
-        CloseHandle(mm->hProcess);
-    }
     free(mm);
 }
 
-#ifdef _WIN32
 int MemoryManager_openProcess(MemoryManager* mm)
 {
-    mm->hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, mm->pid);
-
-    if (mm->hProcess == NULL)
+    if (ptrace(PTRACE_ATTACH, mm->pid, NULL, NULL) == -1)
     {
-        fprintf(stderr, "Error to open process. Code error: %lu\n", GetLastError());
+        perror("Error attaching to process");
         return 0;
     }
-    return 1;
-}
-
-int MemoryManager_writeInt(MemoryManager* mm, LPVOID address, int value)
-{
-    if (!WriteProcessMemory(mm->hProcess, address, &value, sizeof(value), NULL))
-    {
-        fprintf(stderr, "Error to write in memory. Code error: %lu\n", GetLastError());
-        
-        CloseHandle(mm->hProcess);
-
-        return 0;
-    }
-    return 1;
-}
-#else
-int MemoryManager_openProcess(MemoryManager* mm)
-{
     
-    return 0;
+    printf("Attached to process with PID: %d\n", mm->pid);
+    
+    return 1;
 }
 
 int MemoryManager_writeInt(MemoryManager* mm, void* address, int value)
 {
-   
-    return 0; 
+    long data = value;
+    if (ptrace(PTRACE_POKETEXT, mm->pid, address, data) == -1)
+    {
+        perror("Error writing to process memory");
+        return 0;
+    }
+    
+    printf("Wrote value %d to address %p\n", value, address);
+    
+    return 1;
 }
-#endif
