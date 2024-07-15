@@ -45,6 +45,14 @@ static void process_selected_callback(pid_t pid, gpointer user_data) {
     g_signal_connect(button, "clicked", G_CALLBACK(button_clicked), GUINT_TO_POINTER(pid));
 }
 
+static void fill_process_listbox(GtkWidget *listbox, gpointer user_data) {
+    // Remove todos os widgets filhos do listbox
+    gtk_container_foreach(GTK_CONTAINER(listbox), (GtkCallback) gtk_widget_destroy, NULL);
+
+    // Chama a função para listar os processos e adicionar à lista
+    list_processes(process_selected_callback, listbox);
+}
+
 int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
 
@@ -60,13 +68,16 @@ int main(int argc, char *argv[]) {
     GtkWidget *label = gtk_label_new("Selected Process:");
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
 
+    GtkWidget *listbox = gtk_list_box_new();
+    gtk_box_pack_start(GTK_BOX(box), listbox, TRUE, TRUE, 0);
+
     GtkWidget *button_list = gtk_button_new_with_label("List Processes");
     gtk_box_pack_start(GTK_BOX(box), button_list, FALSE, FALSE, 0);
 
     GtkWidget *button_write = gtk_button_new_with_label("Write Memory");
     gtk_box_pack_start(GTK_BOX(box), button_write, FALSE, FALSE, 0);
 
-    g_signal_connect(button_list, "clicked", G_CALLBACK(list_processes), process_selected_callback);
+    g_signal_connect(button_list, "clicked", G_CALLBACK(fill_process_listbox), listbox);
     g_signal_connect(button_write, "clicked", G_CALLBACK(button_clicked), NULL);
 
     gtk_widget_show_all(window);
