@@ -1,4 +1,4 @@
-#include "memory_mannager.h"
+#include "memory_manager.h"
 #include <stdio.h>
 
 MemoryManager* MemoryManager_new(DWORD pid) 
@@ -41,7 +41,7 @@ int MemoryManager_writeInt(memoryManager* mm, LPVOID address, int value {})
         
         Closehandle(mm->hProcess);
 
-        return (0);
+        return 0;
     }
-    return (1);
+    return 1;
 }
