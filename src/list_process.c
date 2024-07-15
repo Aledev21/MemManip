@@ -25,7 +25,7 @@ void list_processes(ProcessSelectedCallback callback, gpointer user_data) {
                 char cmdline[256];
                 if (fgets(cmdline, sizeof(cmdline), fp)) {
                     cmdline[strcspn(cmdline, "\n")] = '\0';
-                    callback(pid, user_data);
+                    callback(pid, cmdline, user_data); // Passa o PID e o comando do processo
                 }
                 fclose(fp); 
             }
