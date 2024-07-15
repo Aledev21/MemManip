@@ -21,6 +21,16 @@ void list_processes(ProcessSelectedCallback callback, gpointer user_data)
         if (entr ->d_type == DT_DIR && atoi(entry->d_name) != 0)
         {
             pid_t pid = atoi(entry->d_name);
+            char filename[512];
+            snprintf(filename, sizeof(filename), "/proc/%d/cmdline", pid);
+        }
+
+        FILE *fp = fopen(filename, "r");
+        if (fp != NULL) 
+        {
+            char cmdline[256];
+
+            
         }
     }
 }
