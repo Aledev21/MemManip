@@ -1,19 +1,27 @@
-CC := gcc
-CFLAGS := -Wall $(shell pkg-config --cflags gtk+-3.0)
-LIBS := $(shell pkg-config --libs gtk+-3.0)
-EXECUTABLE := memory_manager
-SRCS := memory_manager.c main.c  
-OBJS := $(SRCS:.c=.o)
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c17
+LIBS = `pkg-config --cflags --libs gtk+-3.0`
 
-all: $(EXECUTABLE)
+SRC_DIR = src
+OBJ_DIR = obj
 
-$(EXECUTABLE): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-%.o: %.c memory_manager.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-clean:
-	rm -f $(OBJS) $(EXECUTABLE)
+EXEC = memory_manager
 
 .PHONY: all clean
+
+all: $(EXEC)
+
+$(EXEC): $(OBJ)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(LIBS) -I$(SRC_DIR) -c $< -o $@
+
+$(OBJ_DIR):
+	mkdir -p $@
+
+clean:
+	rm -rf $(OBJ_DIR) $(EXEC)
