@@ -6,16 +6,19 @@
 #else
 #include <unistd.h>
 #include <sys/types.h>
+
+typedef unsigned long DWORD;
+typedef void* LPVOID;
+
 #endif
 
 typedef struct {
-    #ifdef _WIN32
+#ifdef _WIN32
     HANDLE hProcess;
     DWORD pid;
-    #else
-    
-    /
-    #endif
+#else
+    pid_t pid;
+#endif
 } MemoryManager;
 
 MemoryManager* MemoryManager_new(DWORD pid);
@@ -25,7 +28,6 @@ void MemoryManager_delete(MemoryManager* mm);
 int MemoryManager_openProcess(MemoryManager* mm);
 int MemoryManager_writeInt(MemoryManager* mm, LPVOID address, int value);
 #else
-
 int MemoryManager_openProcess(MemoryManager* mm);
 int MemoryManager_writeInt(MemoryManager* mm, void* address, int value);
 #endif
