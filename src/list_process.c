@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>  
 
 void list_processes(ProcessSelectedCallback callback, gpointer user_data) {
     DIR *dir;
@@ -15,7 +16,11 @@ void list_processes(ProcessSelectedCallback callback, gpointer user_data) {
     }
 
     while ((entry = readdir(dir)) != NULL) {
+#ifdef DT_DIR
         if (entry->d_type == DT_DIR && atoi(entry->d_name) != 0) {
+#else
+        if (atoi(entry->d_name) != 0) {  
+#endif
             pid_t pid = atoi(entry->d_name);
             char filename[512];
             snprintf(filename, sizeof(filename), "/proc/%d/cmdline", pid);
@@ -25,7 +30,7 @@ void list_processes(ProcessSelectedCallback callback, gpointer user_data) {
                 char cmdline[256];
                 if (fgets(cmdline, sizeof(cmdline), fp)) {
                     cmdline[strcspn(cmdline, "\n")] = '\0';
-                    callback(pid, cmdline, user_data); // Passa o PID e o comando do processo
+                    callback(pid, user_data); 
                 }
                 fclose(fp); 
             }
