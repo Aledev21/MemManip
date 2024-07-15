@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c17
-LIBS = `pkg-config --cflags --libs gtk+-3.0`
+CFLAGS = -Wall -Wextra -std=c17 `pkg-config --cflags gtk+-3.0`
+LIBS = `pkg-config --libs gtk+-3.0`
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -15,10 +15,10 @@ EXEC = memory_manager
 all: $(EXEC)
 
 $(EXEC): $(OBJ)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+	$(CC) $^ $(LIBS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) $(LIBS) -I$(SRC_DIR) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJ_DIR):
 	mkdir -p $@
