@@ -15,4 +15,12 @@ void list_processes(ProcessSelectedCallback callback, gpointer user_data)
         perror("opendir");
         return;
     }
+
+    while ((entry = readdir(dir)) != NULL) 
+    {
+        if (entr ->d_type == DT_DIR && atoi(entry->d_name) != 0)
+        {
+            pid_t pid = atoi(entry->d_name);
+        }
+    }
 }
