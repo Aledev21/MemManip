@@ -4,53 +4,66 @@
 
 static MemoryManager *mm = NULL;
 
-static void button_clicked(GtkWidget *widget, gpointer data) {
-    pid_t pid = (pid_t)data;
-    void *address = (void *)0x00401000;
-    int value = 100;
+static void on_process_selected(pid_t pid, gpointer user_data) {
+    GtkWidget *label = GTK_WIDGET(user_data);
 
+    if (!GTK_IS_LABEL(label)) {
+        g_print("Error: user_data is not a GtkLabel.\n");
+        return;
+    }
+
+    gchar *text = g_strdup_printf("Selected Process: PID=%d", pid);
+    gtk_label_set_text(GTK_LABEL(label), text);
+    g_free(text);
+
+    // Configura mm para o processo selecionado
+    if (mm != NULL) {
+        MemoryManager_delete(mm);
+    }
+    mm = MemoryManager_new(pid);
     if (mm == NULL) {
-        mm = MemoryManager_new(pid);
-        if (mm == NULL) {
-            g_print("Failed to create MemoryManager.\n");
-            return;
-        }
+        g_print("Failed to create MemoryManager.\n");
+        return;
     }
+}
 
-    if (!MemoryManager_openProcess(mm)) {
-        g_print("Failed to open process.\n");
-        MemoryManager_delete(mm);
-        mm = NULL;
+
+static void on_row_selected(GtkListBox *listbox, GtkListBoxRow *row, gpointer user_data) {
+    GtkWidget *label = gtk_bin_get_child(GTK_BIN(row));
+
+    if (!GTK_IS_LABEL(label)) {
+        g_print("Error: The selected row does not contain a GtkLabel.\n");
         return;
     }
 
-    if (!MemoryManager_writeInt(mm, address, value)) {
-        g_print("Failed to write in memory.\n");
-        MemoryManager_delete(mm);
-        mm = NULL;
-        return;
-    }
+    gchar *pid_str = gtk_label_get_text(GTK_LABEL(label));
+    pid_t pid = (pid_t)atoi(pid_str);
 
-    g_print("Value %d written to memory at address %p.\n", value, address);
+    on_process_selected(pid, user_data);
 }
 
-static void process_selected_callback(pid_t pid, gpointer user_data) {
-    GtkWidget *button = GTK_WIDGET(user_data);
-
-    gchar *label_text = g_strdup_printf("Selected Process: PID=%d", pid);
-    gtk_button_set_label(GTK_BUTTON(button), label_text);
-    g_free(label_text);
-
-    g_signal_handlers_disconnect_by_func(button, G_CALLBACK(button_clicked), GUINT_TO_POINTER(pid));
-    g_signal_connect(button, "clicked", G_CALLBACK(button_clicked), GUINT_TO_POINTER(pid));
-}
 
 static void fill_process_listbox(GtkWidget *listbox, gpointer user_data) {
-    // Remove todos os widgets filhos do listbox
-    gtk_container_foreach(GTK_CONTAINER(listbox), (GtkCallback) gtk_widget_destroy, NULL);
+    gtk_container_foreach(GTK_CONTAINER(listbox), (GtkCallback)gtk_widget_destroy, NULL);
 
-    // Chama a função para listar os processos e adicionar à lista
-    list_processes(process_selected_callback, listbox);
+    // Lista os processos e adiciona ao listbox
+    void process_callback(pid_t pid, gpointer data) {
+        GtkWidget *listbox = GTK_WIDGET(data);
+        gchar *pid_str = g_strdup_printf("%d", pid);
+        GtkWidget *row = gtk_list_box_row_new();
+        GtkWidget *label = gtk_label_new(pid_str);
+        gtk_container_add(GTK_CONTAINER(row), label);
+        gtk_list_box_insert(GTK_LIST_BOX(listbox), row, -1);
+        g_free(pid_str);
+    }
+
+    list_processes(process_callback, listbox);
+}
+
+
+static void on_button_list_clicked(GtkWidget *button, gpointer user_data) {
+    GtkWidget *listbox = GTK_WIDGET(user_data);
+    fill_process_listbox(listbox, gtk_widget_get_parent(GTK_WIDGET(button)));
 }
 
 int main(int argc, char *argv[]) {
@@ -74,11 +87,8 @@ int main(int argc, char *argv[]) {
     GtkWidget *button_list = gtk_button_new_with_label("List Processes");
     gtk_box_pack_start(GTK_BOX(box), button_list, FALSE, FALSE, 0);
 
-    GtkWidget *button_write = gtk_button_new_with_label("Write Memory");
-    gtk_box_pack_start(GTK_BOX(box), button_write, FALSE, FALSE, 0);
-
-    g_signal_connect(button_list, "clicked", G_CALLBACK(fill_process_listbox), listbox);
-    g_signal_connect(button_write, "clicked", G_CALLBACK(button_clicked), NULL);
+    g_signal_connect(button_list, "clicked", G_CALLBACK(on_button_list_clicked), listbox);
+    g_signal_connect(listbox, "row-activated", G_CALLBACK(on_row_selected), label);
 
     gtk_widget_show_all(window);
 
